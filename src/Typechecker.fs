@@ -228,7 +228,23 @@ let rec internal typer (env: TypingEnv) (node: UntypedAST): TypingResult =
             Ok { Pos = node.Pos; Env = env; Type = tpe; Expr = Sub(tlhs, trhs) }
         | Error(es) -> Error(es)
 
+    | Div(lhs, rhs) ->
+        match (binaryNumericalOpTyper "division" node.Pos env lhs rhs) with
+        | Ok(tpe, tlhs, trhs) ->
+            Ok { Pos = node.Pos; Env = env; Type = tpe; Expr = Div(tlhs, trhs) }
+        | Error(es) -> Error(es)
 
+    | Rem(lhs, rhs) ->
+        match (binaryNumericalOpTyper "remainder" node.Pos env lhs rhs) with
+        | Ok(tpe, tlhs, trhs) ->
+            Ok { Pos = node.Pos; Env = env; Type = TInt; Expr = Rem(tlhs, trhs) }
+        | Error(es) -> Error(es)
+
+    | Sqrt(arg) ->
+        match (typer env arg) with
+        | Ok(targ) when (isSubtypeOf env targ.Type TFloat) ->
+            Ok { Pos = node.Pos; Env = env; Type = TFloat; Expr = Sqrt(targ) }
+        | Error(es) -> Error(es)
 
     | Add(lhs, rhs) ->
         match (binaryNumericalOpTyper "addition" node.Pos env lhs rhs) with

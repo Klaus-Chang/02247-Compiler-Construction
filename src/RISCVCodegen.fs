@@ -111,6 +111,8 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
 
     | Add(lhs, rhs)
     | Sub(lhs, rhs)  // <-- We add this line
+    | Rem(lhs, rhs)
+    | Div(lhs, rhs)
     | Mult(lhs, rhs) as expr ->
         // Code generation for addition and multiplication is very
         // similar: we compile the lhs and rhs giving them different target
@@ -136,6 +138,12 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
                     | Sub(_,_) ->                      // <-- We add this case
                         Asm(RV.SUB(Reg.r(env.Target),
                                    Reg.r(env.Target), Reg.r(rtarget)))
+                    | Rem(_,_) ->
+                        Asm(RV.REM(Reg.r(env.Target),
+                                   Reg.r(env.Target), Reg.r(rtarget)))
+                    | Div(_,_) ->
+                        Asm(RV.DIV(Reg.r(env.Target),
+                                   Reg.r(env.Target), Reg.r(rtarget)))
 
                     | Mult(_,_) ->
                         Asm(RV.MUL(Reg.r(env.Target),
@@ -158,7 +166,9 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
                 | Sub(_,_) ->                         // < -- We add this case
                     Asm(RV.FSUB_S(FPReg.r(env.FPTarget),
                                   FPReg.r(env.FPTarget), FPReg.r(rfptarget)))
-                
+                | Div(_,_) ->
+                    Asm(RV.FDIV_S(FPReg.r(env.FPTarget),
+                                  FPReg.r(env.FPTarget), FPReg.r(rfptarget)))
                 | Mult(_,_) ->
                     Asm(RV.FMUL_S(FPReg.r(env.FPTarget),
                                   FPReg.r(env.FPTarget), FPReg.r(rfptarget)))
@@ -167,6 +177,12 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
             lAsm ++ rAsm ++ opAsm
         | t ->
             failwith $"BUG: numerical operation codegen invoked on invalid type %O{t}"
+    
+    | Sqrt(arg) -> 
+        let argCode = doCodegen env arg
+        match arg.Type with
+        | t when (isSubtypeOf arg.Env t TFloat) -> argCode.AddText(RV.FSQRT_S(FPReg.r(env.FPTarget), FPReg.r(env.FPTarget)))
+        | t -> failwith $"BUG: Sqrt invoked on unsupported type %O{t}"
 
     | And(lhs, rhs)
     | Or(lhs, rhs) as expr ->

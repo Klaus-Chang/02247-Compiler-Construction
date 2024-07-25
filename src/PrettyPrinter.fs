@@ -115,6 +115,15 @@ let rec internal formatASTRec (node: AST.Node<'E,'T>): Tree =
     | Sub(lhs, rhs) ->
         mkTree "Sub" node [("lhs", formatASTRec lhs)
                            ("rhs", formatASTRec rhs)]    
+    | Div(lhs, rhs) ->
+        mkTree "Div" node [("lhs", formatASTRec lhs)
+                           ("rhs", formatASTRec rhs)]
+    | Rem(lhs, rhs) ->
+        mkTree "Rem" node [("lhs", formatASTRec lhs)
+                           ("rhs", formatASTRec rhs)]
+
+    | Sqrt(arg) ->
+        mkTree "Sqrt" node [("arg", formatASTRec arg)]
 
 
     | And(lhs, rhs) ->

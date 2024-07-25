@@ -1,0 +1,2 @@
+assert(sqrt(12.0f + 0.1f) < 3.5f);
+assert(sqrt(4.0f) = 2.0f)

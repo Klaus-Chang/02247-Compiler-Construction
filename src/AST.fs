@@ -102,6 +102,15 @@ and Expr<'E,'T> =
     | Sub of lhs: Node<'E,'T>
            * rhs: Node<'E,'T>
 
+    /// Division between lhs and rhs.
+    | Div of lhs: Node<'E, 'T> * rhs: Node<'E, 'T>
+
+    /// Remainder between lhs and rhs.
+    | Rem of lhs: Node<'E, 'T> * rhs: Node<'E, 'T>
+
+    /// Square root
+    | Sqrt of arg: Node<'E, 'T>
+
            
     /// Multiplication between lhs and rhs.
     | Mult of lhs: Node<'E,'T>

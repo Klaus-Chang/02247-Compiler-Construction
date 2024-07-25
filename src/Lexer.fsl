@@ -56,6 +56,10 @@ rule tokenize = parse
 | "*"          { Parser.TIMES }
 | "+"          { Parser.PLUS }
 | "-"          { Parser.MINUS }  // <-- We add this line
+| "%"          { Parser.REM }
+| "/"          { Parser.DIV }
+
+
 | "and"        { Parser.AND }
 | "or"         { Parser.OR }
 | "not"        { Parser.NOT }
@@ -74,6 +78,7 @@ rule tokenize = parse
 | ':'          { Parser.COLON }
 
 // Keywords
+| "sqrt"       { Parser.SQRT }
 | "if"         { Parser.IF }
 | "then"       { Parser.THEN }
 | "else"       { Parser.ELSE }

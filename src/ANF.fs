@@ -52,7 +52,8 @@ let rec substVar (node: Node<'E,'T>) (var: string) (var2: string): Node<'E,'T> =
         {node with Expr = Add((substVar lhs var var2), (substVar rhs var var2))}
     | Sub(lhs, rhs) ->
         {node with Expr = Sub((substVar lhs var var2), (substVar rhs var var2))}
-    
+    | Div(lhs, rhs) ->
+        {node with Expr = Div((substVar lhs var var2), (substVar rhs var var2))}
     | Mult(lhs, rhs) ->
         {node with Expr = Mult((substVar lhs var var2), (substVar rhs var var2))}
 
@@ -190,6 +191,7 @@ let rec internal toANFDefs (node: Node<'E,'T>): Node<'E,'T> * ANFDefs<'E,'T> =
 
     | Add(lhs, rhs)
     | Sub(lhs, rhs)
+    | Div(lhs, rhs)
     | Mult(lhs, rhs)
     | And(lhs, rhs)
     | Or(lhs, rhs)
