@@ -1,0 +1,7 @@
+let x: int = 0;
+{
+    let mutable x = 3;
+    x <- x + 1;
+    assert(x = 4)
+}
+assert(x = 0)

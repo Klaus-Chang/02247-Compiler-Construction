@@ -1,0 +1,12 @@
+let s1: struct {f: float} = struct {f = 0.0f; g = true};
+let s2: struct {g: struct {f: float}; f: float} = struct {g = s1; f = 0.0f};
+let s3: struct {f: float; h: struct {g: struct {f: float}; f: float}} =
+    struct {f = 0.0f; h = s2; g = "Hello"};
+
+assert(s3.h.g.f = 0.0f);
+
+s3.h.g.f <- s3.h.f <- s3.f <- 42.0f;
+
+assert(s3.f = 42.0f);
+assert(s3.h.f = 42.0f);
+assert(s3.h.g.f = 42.0f)

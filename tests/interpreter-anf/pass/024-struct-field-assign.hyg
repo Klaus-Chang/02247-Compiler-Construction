@@ -1,0 +1,11 @@
+let s1: foo = struct {f = 0; g = true};
+let s2: bar = struct {f = 0; g = s1};
+let s3: baz = struct {f = 0; g = "Hello"; h = s2};
+
+assert(s3.h.g.f = 0);
+
+s3.h.g.f <- s3.h.f <- s3.f <- 42;
+
+assert(s3.f = 42);
+assert(s3.h.f = 42);
+assert(s3.h.g.f = 42)

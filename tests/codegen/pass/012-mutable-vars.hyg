@@ -1,0 +1,8 @@
+let mutable x = 0;
+{
+    let mutable y = 3;
+    x <- x + 1;
+    y <- y + 2;
+    assert(x + y = 6)
+};
+assert(x = 1)

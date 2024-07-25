@@ -1,0 +1,4 @@
+let x: int = 1;
+fun f(x: int): int = x + 1;
+assert(x = 1);
+assert(f(41) = 42)

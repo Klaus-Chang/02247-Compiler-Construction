@@ -1,0 +1,310 @@
+%{
+
+// Preamble with definitions of types and/or functions.  The code appearing here
+// will be placed on top of the generated parser source code.
+open FSharp.Text.Parsing
+open AST
+
+// Auxiliary function to compute the position of an AST node
+let pos (parseState: IParseState, inputIdx: int): AST.Position =
+  let mainPos = parseState.InputStartPosition inputIdx
+  let (rstart, rend) = parseState.ResultRange
+  { FileName = mainPos.FileName
+    Line = mainPos.pos_lnum + 1 // Line numbering from 1
+    Col = mainPos.pos_cnum - mainPos.pos_bol + 1 // Line numbering from 1
+    LineStart = rstart.pos_lnum + 1 // Row numbering from 1
+    ColStart = rstart.pos_cnum - rstart.pos_bol + 1 // Column numbering from 1
+    LineEnd = rend.pos_lnum + 1
+    ColEnd = rend.pos_cnum - rend.pos_bol } // No +1: cover last-used character
+
+// Auxiliary function to build an Abstract Syntax Tree node for a Hygge pretype.
+// 'inputIdx' is the index of the symbol to use for computing the position of
+// this expression (it will be used e.g. when reporting error messages).
+let mkPretypeNode (parseState: IParseState, inputIdx: int, t: Pretype): PretypeNode =
+  { Pos = pos(parseState, inputIdx); Pretype = t }
+
+// Auxiliary function to build an untyped AST node for a Hygge expression.
+// 'inputIdx' is the index of the symbol to use for computing the position of
+// this expression (it will be used e.g. when reporting error messages).
+let mkNode (parseState: IParseState, inputIdx: int, e: UntypedExpr): UntypedAST =
+  { Pos = pos(parseState, inputIdx); Env = (); Type = (); Expr = e }
+
+%}
+
+// Name of the grammar rule (defined below) to parse first.
+%start program
+
+// The type of data produced by a successful parsing of the 'program' rule.
+%type <AST.UntypedAST> program
+
+// The tokens that follow are declared here, and recognised by the lexer
+// according to its configuration in Lexer.fsl.
+
+// Tokens for literal (constant) values
+%token <bool> LIT_BOOL
+%token <int> LIT_INT
+%token <single> LIT_FLOAT
+%token <string> LIT_STRING
+%token <unit> LIT_UNIT
+
+// Tokens for arithmetic operators
+%token TIMES PLUS MINUS    // <-- We add "MINUS" here
+
+// Tokens for logical operators
+%token AND OR NOT
+
+
+
+// Tokens for relational operators
+%token EQ LT
+
+// Tokens for control flow
+%token IF THEN ELSE
+
+// Tokens for parentheses and brackets
+%token LPAR RPAR LCURLY RCURLY
+
+// Variable and type declarators
+%token LET TYPE MUTABLE
+
+// Misc tokens
+%token SEMI EOF COLON LARROW RARROW COMMA DOT
+
+// Built-in statements
+%token READ_INT
+%token READ_FLOAT
+%token PRINT
+%token PRINTLN
+%token ASSERT
+%token WHILE
+%token DO
+%token FUN
+%token STRUCT
+%token UNION MATCH WITH
+
+// Generic identifier (might result in a variable, pretype, etc.)
+%token <string> IDENT
+
+%%
+
+// These are the rules of the grammar.  For each rule, we specify a snippet of
+// F# code (between curly brackets) to be executed after a grammar rule is
+// matched.  The code snippet can refer to each sub-expression by number ($1,
+// $2, ...) to retrieve the result of the snippet of F# code executed after
+// that sub-expression was matched earlier.
+
+// Starting point: parsing rule for a whole Hygge program.
+program:
+    | expr EOF  { $1 } // A program is an expression followed by End-Of-File
+
+// Any expression.
+expr:
+  | TYPE variable EQ pretype SEMI expr  {
+        mkNode(parseState, 1, Expr.Type($2, $4, $6))
+    }
+  | LET variable EQ simpleExpr SEMI expr  {
+        mkNode(parseState, 1, Expr.Let($2, $4, $6))
+    }
+  | LET variable COLON pretype EQ simpleExpr SEMI expr  {
+        mkNode(parseState, 1, Expr.LetT($2, $4, $6, $8))
+    }
+  | LET MUTABLE variable EQ simpleExpr SEMI expr  {
+        mkNode(parseState, 1, Expr.LetMut($3, $5, $7))
+    }
+  | FUN variable parenArgTypesSeq COLON pretype EQ simpleExpr SEMI expr  {
+      let (_, argTypes) = List.unzip $3 // Extract argument pretypes
+      mkNode(parseState, 1, Expr.LetT($2, mkPretypeNode(parseState, 5,
+                                                        Pretype.TFun(argTypes, $5)),
+                                      mkNode(parseState, 7, Lambda($3, $7)), $9))
+    }
+  | curlyExpr expr  { mkNode(parseState, 1, Expr.Seq([$1; $2])) }
+  | sequenceExpr  {
+        // If the sequence only contains one expression, we simplify the AST: we
+        // just return the expression...
+        if (List.length $1) = 1 then mkNode(parseState, 1, ($1.[0]:UntypedAST).Expr)
+        // ...otherwise, we build a Seq with all entries
+        else mkNode(parseState, 1, Expr.Seq($1))
+    }
+
+// Expression between curly brackets
+curlyExpr:
+  | LCURLY expr RCURLY  { $2 }
+
+// Sequence of expressions separated by semicolons.
+sequenceExpr:
+  | simpleExpr SEMI expr  {
+      // If the parsed 'expr' after the semicolon is a Seq, we simplify the AST:
+      // instead of returning the Seq, we concatenate its nodes directly after
+      // the 'simpleExpr' parsed before the semicolon
+      match $3.Expr with
+      | Seq(nodes) -> $1 :: nodes
+      | _ -> $1 :: [$3]
+    }
+  | simpleExpr            { [$1] }
+
+// A "simple" expression, which (unlike the more general 'expr' above) cannot
+// result in a 'Seq'uence of sub-expressions, unless they are explicitly
+// enclosed in curly brackets
+simpleExpr:
+  | ifExpr                { $1 }
+  | curlyExpr             { $1 }
+  | primary LARROW simpleExpr  { mkNode(parseState, 2, Expr.Assign($1, $3)) }
+  | WHILE simpleExpr DO simpleExpr  { mkNode(parseState, 1, Expr.While($2, $4)) }
+  | FUN parenArgTypesSeq RARROW simpleExpr  { mkNode(parseState, 1, Expr.Lambda($2, $4)) }
+  | MATCH simpleExpr WITH LCURLY matchCases RCURLY  { mkNode(parseState, 1,
+                                                             Expr.Match($2, $5)) }
+
+// An 'if-then-else' expression
+ifExpr:
+  | IF simpleExpr THEN simpleExpr ELSE simpleExpr  { mkNode(parseState, 1, Expr.If($2, $4, $6)) }
+  | orExpr                                         { $1 }
+
+// Logical 'or' expression
+orExpr:
+  | orExpr OR andExpr  { mkNode(parseState, 2, Expr.Or($1, $3)) }
+  | andExpr            { $1 }
+
+// Logical 'and' expression
+andExpr:
+  | andExpr AND relExpr  { mkNode(parseState, 2, Expr.And($1, $3)) }
+  | relExpr              { $1 }
+
+// Relational expression
+relExpr:
+  | addExpr EQ addExpr  { mkNode(parseState, 2, Expr.Eq($1, $3)) }
+  | addExpr LT addExpr  { mkNode(parseState, 2, Expr.Less($1, $3)) }
+  | addExpr             { $1 }
+
+
+
+// Additive expression
+addExpr:
+  | addExpr PLUS multExpr   { mkNode(parseState, 2, Expr.Add($1, $3)) }
+  | addExpr MINUS multExpr  { mkNode(parseState, 2, Expr.Sub($1, $3)) }
+  | multExpr                { $1 }
+
+
+// Multiplicative expression
+multExpr:
+  | multExpr TIMES unaryExpr  { mkNode(parseState, 2, Expr.Mult($1, $3)) }
+  | unaryExpr                 { $1 }
+
+// Unary expression
+unaryExpr:
+  | NOT unaryExpr                 { mkNode(parseState, 1, Expr.Not($2)) }
+  | READ_INT LIT_UNIT             { mkNode(parseState, 1, Expr.ReadInt) }
+  | READ_INT LPAR RPAR            { mkNode(parseState, 1, Expr.ReadInt) }
+  | READ_FLOAT LIT_UNIT           { mkNode(parseState, 1, Expr.ReadFloat) }
+  | READ_FLOAT LPAR RPAR          { mkNode(parseState, 1, Expr.ReadFloat) }
+  | PRINT LPAR simpleExpr RPAR    { mkNode(parseState, 1, Expr.Print($3)) }
+  | PRINTLN LPAR simpleExpr RPAR  { mkNode(parseState, 1, Expr.PrintLn($3)) }
+  | ASSERT LPAR simpleExpr RPAR   { mkNode(parseState, 1, Expr.Assertion($3)) }
+  | ascriptionExpr                { $1 }
+  | primary parenExprCommaSeq     { mkNode(parseState, 1, Expr.Application($1, $2))}
+
+// Ascription, i.e. primary expression with (optional) type annotation
+ascriptionExpr:
+  | primary COLON pretype  { mkNode(parseState, 2, Expr.Ascription($3, $1)) }
+  | primary                { $1 }
+
+// Primary expressions
+primary:
+  | LPAR simpleExpr RPAR                     { $2 }
+  | value                                    { $1 }
+  | variable                                 { mkNode(parseState, 1, Expr.Var($1)) }
+  | STRUCT LCURLY structFieldInitSeq RCURLY  { mkNode(parseState, 1, Expr.StructCons($3)) }
+  | primary DOT field                        { mkNode(parseState, 2, Expr.FieldSelect($1, $3)) }
+  | label LCURLY expr RCURLY                 { mkNode(parseState, 1, Expr.UnionCons($1, $3)) }
+
+// Variable name
+variable:
+  | ident       { $1 }
+
+// Literal constants
+value:
+  | LIT_BOOL    { mkNode(parseState, 1, Expr.BoolVal($1)) }
+  | LIT_INT     { mkNode(parseState, 1, Expr.IntVal($1)) }
+  | LIT_FLOAT   { mkNode(parseState, 1, Expr.FloatVal($1)) }
+  | LIT_STRING  { mkNode(parseState, 1, Expr.StringVal($1.[1..^1])) } // Trim quotes around string
+  | LIT_UNIT    { mkNode(parseState, 1, Expr.UnitVal) }
+
+// Pretype specification
+pretype:
+  | ident                                    { mkPretypeNode(parseState, 1,
+                                                             Pretype.TId($1)) }
+  | parenTypesSeq RARROW pretype             { mkPretypeNode(parseState, 1,
+                                                             Pretype.TFun($1, $3)) }
+  | STRUCT LCURLY structFieldTypeSeq RCURLY  { mkPretypeNode(parseState, 1,
+                                                             Pretype.TStruct($3)) }
+  | UNION LCURLY unionLabelTypeSeq RCURLY    { mkPretypeNode(parseState, 1,
+                                                             Pretype.TUnion($3)) }
+
+// Generic identifier
+ident:
+  | IDENT  { $1 } // We just return the string captured by the token 'IDENT'
+
+// Possibly empty equence of comma-separated identifiers with type ascriptions,
+// in parentheses
+parenArgTypesSeq:
+  | LPAR RPAR              { [] }
+  | LIT_UNIT               { [] } // Needed because token LIT_UNIT matches "()"
+  | LPAR argTypesSeq RPAR  { $2 }
+
+// Non-empty sequence of comma-separated identifiers with type ascriptions
+argTypesSeq:
+  | variable COLON pretype COMMA argTypesSeq  { ($1, $3) :: $5 }
+  | variable COLON pretype                    { [($1, $3)] }
+
+// Possibly empty equence of comma-separated pretypes
+parenTypesSeq:
+  | LPAR RPAR           { [] }
+  | LIT_UNIT            { [] } // Needed because token LIT_UNIT matches "()"
+  | LPAR typesSeq RPAR  { $2 }
+
+// Non-empty sequence of types
+typesSeq:
+  | pretype COMMA typesSeq  { $1 :: $3 }
+  | pretype                 { [$1] }
+
+// Possibly empty equence of comma-separated expressions, between parentheses
+parenExprCommaSeq:
+  | LPAR RPAR               { [] }
+  | LIT_UNIT                { [] } // Needed because token LIT_UNIT matches "()"
+  | LPAR exprCommaSeq RPAR  { $2 }
+
+// Non-empty sequence of comma-separated expressions
+exprCommaSeq:
+  | simpleExpr COMMA exprCommaSeq  { $1 :: $3 }
+  | simpleExpr                     { [$1] }
+
+// Non-empty sequence of structure field initializations, separated by
+// semicolons
+structFieldInitSeq:
+  | field EQ simpleExpr SEMI structFieldInitSeq  { ($1, $3) :: $5 }
+  | field EQ simpleExpr                          { [($1, $3)] }
+
+// Field of a structure
+field:
+  | ident       { $1 }
+
+// Non-empty sequence of names and types, separated by semicolons (used for
+// defining structs)
+structFieldTypeSeq:
+  | field COLON pretype SEMI structFieldTypeSeq  { ($1, $3) :: $5 }
+  | field COLON pretype                          { [($1, $3)] }
+
+// Non-empty sequence of labels and types, separated by semicolons (used for
+// defining unions)
+unionLabelTypeSeq:
+  | label COLON pretype SEMI unionLabelTypeSeq  { ($1, $3) :: $5 }
+  | label COLON pretype                         { [($1, $3)] }
+
+// Label in a labelled union type
+label:
+  | ident       { $1 }
+
+// Non-empty sequence of pattern matching cases (with a label and variable) and
+// continuations (simple expressions to be executed upon a match).
+matchCases:
+  | label LCURLY variable RCURLY RARROW simpleExpr SEMI matchCases  { ($1, $3, $6) :: $8 }
+  | label LCURLY variable RCURLY RARROW simpleExpr                  { [($1, $3, $6)] }

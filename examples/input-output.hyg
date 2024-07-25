@@ -1,0 +1,17 @@
+println("Please insert two integer values:");
+print("x: ");
+let x = readInt();
+print("y: ");
+let y = readInt();
+print("The result of x + y is: ");
+println(x + y);
+
+//////////
+
+println("Please insert two floating-point values:");
+print("w: ");
+let w = readFloat();
+print("z: ");
+let z = readFloat();
+print("The result of w + z is: ");
+println(w + z)

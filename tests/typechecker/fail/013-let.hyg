@@ -1,0 +1,6 @@
+let x: int = 3;
+let y: int = {
+    let z: int = 4;
+    z + y
+};
+println(x + x)

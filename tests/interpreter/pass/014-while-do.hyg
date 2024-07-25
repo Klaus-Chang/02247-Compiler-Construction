@@ -1,0 +1,9 @@
+let mutable x = 0;
+let mutable y = 10;
+
+while not (x + y = 42) do {
+    x <- x + 1;
+    y <- y + 1
+};
+
+assert(x + y = 42)

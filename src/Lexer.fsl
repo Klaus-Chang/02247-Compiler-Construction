@@ -1,0 +1,100 @@
+{
+
+// Preamble with definitions of types and/or functions.  The code appearing here
+// will be placed on top of the generated lexer source code.
+
+// The lexer's input buffer type (just a shorthand type alias used below).
+type LexBuffer<'a> = FSharp.Text.Lexing.LexBuffer<'a>
+
+// Auxiliary function to update the token stream position to the next line.
+let skipline (lexbuf: LexBuffer<_>) =
+  // Compute the next line position
+  let newPos = lexbuf.EndPos.NextLine
+  // Update the token stream position, marking the beginning of line position
+  // (pos_bol) at the current total number of scanned characters (pos_cnum)
+  lexbuf.EndPos <- { newPos with pos_bol = newPos.pos_cnum }
+
+}
+
+// Regular expressions used in the token rules below
+let letter     = ['a'-'z'] | ['A'-'Z']
+let digit      = ['0'-'9']
+let litUnit    = "()"
+let litBool    = "true" | "false"
+let litInt     = digit+
+let litFloat   = digit+ '.' digit+ (('e'|'E') ('+'|'-')? digit+)? 'f'
+let litString  = '"' ("\\\"" | [^'"'])* '"'
+let ident      = (letter | '_') (letter | '_' | digit)*
+let whitespace = [' ' '\t' '\r']
+let newline    = '\n'
+
+// We now define the rules for recognising the language tokens.
+// NOTE: rules are applied in order, top to bottom.  If two or more rules can be
+//       applied, then the one that captures more input characters is selected;
+//       if two or more rules can be applied and they capture the same input
+//       characters, then the rule that is defined first is selected.
+rule tokenize = parse
+
+// Rules for skipping characters and lines
+| whitespace        { tokenize lexbuf }
+| newline           { skipline lexbuf; tokenize lexbuf }
+| "//" [^'\n''\r']* { tokenize lexbuf }
+
+// Literals
+| litUnit      { Parser.LIT_UNIT() }
+| litBool      { Parser.LIT_BOOL((LexBuffer<_>.LexemeString lexbuf) = "true") }
+| litInt       { Parser.LIT_INT(int (LexBuffer<_>.LexemeString lexbuf)) }
+| litFloat     { Parser.LIT_FLOAT(single ((LexBuffer<_>.LexemeString lexbuf).Split [|'f'|]).[0]) }
+| litString    { Parser.LIT_STRING(LexBuffer<_>.LexemeString lexbuf) }
+
+// Separators
+| ";"          { Parser.SEMI }
+| ","          { Parser.COMMA }
+| "."          { Parser.DOT }
+
+// Operators
+| "*"          { Parser.TIMES }
+| "+"          { Parser.PLUS }
+| "-"          { Parser.MINUS }  // <-- We add this line
+| "and"        { Parser.AND }
+| "or"         { Parser.OR }
+| "not"        { Parser.NOT }
+| "="          { Parser.EQ }
+| "<"          { Parser.LT }
+| "<-"         { Parser.LARROW }
+| "->"         { Parser.RARROW }
+
+// Parentheses and brackets
+| "("          { Parser.LPAR }
+| ")"          { Parser.RPAR }
+| "{"          { Parser.LCURLY }
+| "}"          { Parser.RCURLY }
+
+// Type ascription
+| ':'          { Parser.COLON }
+
+// Keywords
+| "if"         { Parser.IF }
+| "then"       { Parser.THEN }
+| "else"       { Parser.ELSE }
+| "let"        { Parser.LET }
+| "readInt"    { Parser.READ_INT }
+| "readFloat"  { Parser.READ_FLOAT }
+| "print"      { Parser.PRINT }
+| "println"    { Parser.PRINTLN }
+| "assert"     { Parser.ASSERT }
+| "type"       { Parser.TYPE }
+| "mutable"    { Parser.MUTABLE }
+| "while"      { Parser.WHILE }
+| "do"         { Parser.DO }
+| "fun"        { Parser.FUN }
+| "struct"     { Parser.STRUCT }
+| "union"      { Parser.UNION }
+| "match"      { Parser.MATCH }
+| "with"       { Parser.WITH }
+
+// Generic identifier
+| ident        { Parser.IDENT(LexBuffer<_>.LexemeString lexbuf) }
+
+// End of file
+| eof  { Parser.EOF }

@@ -1,0 +1,3 @@
+assert(3 < "Hello!");
+assert(print(42.0f));
+print(assert(3))

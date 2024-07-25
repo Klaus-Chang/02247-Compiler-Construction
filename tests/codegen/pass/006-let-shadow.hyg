@@ -1,0 +1,7 @@
+let x: int = 0;
+{
+    let x: int = 42;
+    assert(if (3 < x) then true else false)
+}
+assert(if (x < 3) then true else false)
+

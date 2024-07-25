@@ -1,0 +1,7 @@
+type S = int;
+let x: S = {
+    type S2 = int;
+    let y: S2 = 42;
+    y
+};
+x: int

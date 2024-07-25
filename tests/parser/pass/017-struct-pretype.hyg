@@ -1,0 +1,2 @@
+let s: struct {f: struct {g: int; h: foo} } = "Hello";
+s

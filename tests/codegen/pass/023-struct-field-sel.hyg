@@ -1,0 +1,8 @@
+assert((struct {f = 42.0f; g = true}).f = 42.0f);
+assert((struct {f = struct {g = 0; h = 42}; h = 1}).f.h = 42);
+
+let s1: struct {f: int} = struct {f = 42; g = true};
+let s2: struct {g: struct {f: int}} = struct {g = s1; f = 0};
+let s3: struct {h: struct {g: struct {f: int}}} =
+    struct {h = s2; f = 0; g = "Hello"};
+assert(s3.h.g.f = 42)

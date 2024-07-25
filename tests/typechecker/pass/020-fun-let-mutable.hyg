@@ -1,0 +1,5 @@
+let f: () -> int = {
+    let mutable n = 0;
+    fun () -> n + 1
+};
+(f()): int

@@ -1,0 +1,4 @@
+(a + 32).f;
+"Hello".g;
+(struct { a = foo; b = bar }).baz;
+x.a.b.c.d

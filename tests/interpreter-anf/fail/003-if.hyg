@@ -1,0 +1,4 @@
+if (2 < 42) then
+    assert(false)
+else
+    assert(true)
