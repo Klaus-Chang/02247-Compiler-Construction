@@ -246,6 +246,31 @@ let rec internal typer (env: TypingEnv) (node: UntypedAST): TypingResult =
             Ok { Pos = node.Pos; Env = env; Type = TFloat; Expr = Sqrt(targ) }
         | Error(es) -> Error(es)
 
+    | Xor(lhs, rhs) ->
+        match (binaryBooleanOpTyper "xor" node.Pos env lhs rhs) with
+        | Ok(tlhs, trhs) ->
+            Ok { Pos = node.Pos; Env = env; Type = TBool; Expr = Xor(tlhs, trhs) }
+        | Error(es) -> Error(es)
+
+    | ShortAnd(lhs, rhs) ->
+        match (binaryBooleanOpTyper "shortAnd" node.Pos env lhs rhs) with
+        | Ok(tlhs, trhs) ->
+            Ok { Pos = node.Pos; Env = env; Type = TBool; Expr = ShortAnd(tlhs, trhs) }
+        | Error(es) -> Error(es)
+
+    | ShortOr(lhs, rhs) ->
+        match (binaryBooleanOpTyper "shortOr" node.Pos env lhs rhs) with
+        | Ok(tlhs, trhs) ->
+            Ok { Pos = node.Pos; Env = env; Type = TBool; Expr = ShortOr(tlhs, trhs) }
+        | Error(es) -> Error(es)
+
+    | Greater(lhs, rhs) ->
+        match (numericalRelationTyper "greater than" node.Pos env lhs rhs) with
+        | Ok(tlhs, trhs) ->
+            Ok { Pos = node.Pos; Env = env; Type = TBool; Expr = Greater(tlhs, trhs) }
+        | Error(es) -> Error(es)
+
+
     | Add(lhs, rhs) ->
         match (binaryNumericalOpTyper "addition" node.Pos env lhs rhs) with
         | Ok(tpe, tlhs, trhs) ->

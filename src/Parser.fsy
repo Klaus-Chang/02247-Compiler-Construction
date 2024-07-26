@@ -51,12 +51,12 @@ let mkNode (parseState: IParseState, inputIdx: int, e: UntypedExpr): UntypedAST 
 %token TIMES PLUS MINUS DIV REM  // <-- We add "MINUS" here
 
 // Tokens for logical operators
-%token AND OR NOT
+%token AND OR NOT XOR SHORTAND SHORTOR
 
 %token SQRT
 
 // Tokens for relational operators
-%token EQ LT
+%token EQ LT GT
 
 // Tokens for control flow
 %token IF THEN ELSE
@@ -157,12 +157,33 @@ simpleExpr:
 // An 'if-then-else' expression
 ifExpr:
   | IF simpleExpr THEN simpleExpr ELSE simpleExpr  { mkNode(parseState, 1, Expr.If($2, $4, $6)) }
-  | orExpr                                         { $1 }
+  //| orExpr                                         { $1 }
+  | shortOrExpr                                    { $1 }
+
+// Short-circuit
+shortOrExpr:
+  | shortOrExpr SHORTOR shortAndExpr  { mkNode(parseState, 2, Expr.ShortOr($1, $3)) }
+  | shortAndExpr                      { $1 }
+
+shortAndExpr:
+  | shortAndExpr SHORTAND orExpr  { mkNode(parseState, 2, Expr.ShortAnd($1, $3)) }
+  | orExpr                        { $1 }
+
+// Logical 'or' expression
+//orExpr:
+//  | orExpr OR andExpr  { mkNode(parseState, 2, Expr.Or($1, $3)) }
+//  | andExpr            { $1 }
 
 // Logical 'or' expression
 orExpr:
-  | orExpr OR andExpr  { mkNode(parseState, 2, Expr.Or($1, $3)) }
-  | andExpr            { $1 }
+  | orExpr OR xorExpr  { mkNode(parseState, 2, Expr.Or($1, $3)) }
+  | xorExpr            { $1 }
+
+// Logical 'xor' expression
+xorExpr:
+  | xorExpr XOR andExpr  { mkNode(parseState, 2, Expr.Xor($1, $3)) }
+  | andExpr              { $1 }
+
 
 // Logical 'and' expression
 andExpr:
@@ -173,6 +194,7 @@ andExpr:
 relExpr:
   | addExpr EQ addExpr  { mkNode(parseState, 2, Expr.Eq($1, $3)) }
   | addExpr LT addExpr  { mkNode(parseState, 2, Expr.Less($1, $3)) }
+  | addExpr GT addExpr  { mkNode(parseState, 2, Expr.Greater($1, $3)) }
   | addExpr             { $1 }
 
 

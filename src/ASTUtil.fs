@@ -36,6 +36,18 @@ let rec subst (node: Node<'E,'T>) (var: string) (sub: Node<'E,'T>): Node<'E,'T> 
     | Sqrt(arg) ->
         {node with Expr = Sqrt(subst arg var sub)}
 
+    | Xor(lhs, rhs) ->
+        {node with Expr = Xor((subst lhs var sub), (subst rhs var sub))}
+    | ShortAnd(lhs, rhs) ->
+        {node with Expr = ShortAnd((subst lhs var sub), (subst rhs var sub))}
+    | ShortOr(lhs, rhs) ->
+        {node with Expr = ShortOr((subst lhs var sub), (subst rhs var sub))}
+
+    | Greater(lhs, rhs ) ->
+        {node with Expr = Greater((subst lhs var sub), (subst rhs var sub))}  
+        
+          
+
     | Add(lhs, rhs) ->
         {node with Expr = Add((subst lhs var sub), (subst rhs var sub))}
     | Mult(lhs, rhs) ->

@@ -185,7 +185,8 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
         | t -> failwith $"BUG: Sqrt invoked on unsupported type %O{t}"
 
     | And(lhs, rhs)
-    | Or(lhs, rhs) as expr ->
+    | Or(lhs, rhs) 
+    | Xor(lhs, rhs) as expr ->
         // Code generation for logical 'and' and 'or' is very similar: we
         // compile the lhs and rhs giving them different target registers, and
         // then apply the relevant assembly operation(s) on their results.
@@ -203,9 +204,39 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
                 Asm(RV.AND(Reg.r(env.Target), Reg.r(env.Target), Reg.r(rtarget)))
             | Or(_,_) ->
                 Asm(RV.OR(Reg.r(env.Target), Reg.r(env.Target), Reg.r(rtarget)))
+            | Xor(_,_) ->
+                Asm(RV.XOR(Reg.r(env.Target), Reg.r(env.Target), Reg.r(rtarget)))
             | x -> failwith $"BUG: unexpected operation %O{x}"
         // Put everything together
         lAsm ++ rAsm ++ opAsm
+
+    | ShortAnd(lhs, rhs)
+    | ShortOr(lhs, rhs) as expr ->
+        /// Human-readable prefix for jump labels, describing the kind of
+        /// relational operation we are compiling
+        let labelName = match expr with
+                        | ShortAnd(_,_) -> "ShortAnd"
+                        | ShortOr(_,_) -> "ShortOr"
+                        | x -> failwith $"BUG: unexpected operation %O{x}"
+
+        /// Label to mark the end of the ShortCircuit And/Or code
+        let labelEnd = Util.genSymbol $"%O{labelName}_end"
+
+        // Compile the lhs expression, then jump to 'labelEnd' if the result is
+        // false (in case of ShortAnd) or true (in case of ShortOr).
+        // Otherwise, execute the rhs expression.
+        (doCodegen env lhs)
+            .AddText(
+                match expr with
+                | ShortAnd(_,_) -> 
+                    RV.BEQZ(Reg.r(env.Target), labelEnd)
+                | ShortOr(_,_) ->
+                    RV.BNEZ(Reg.r(env.Target), labelEnd)
+                | x -> failwith $"BUG: unexpected operation %O{x}"
+            )
+            ++ (doCodegen env rhs)
+                .AddText(RV.LABEL(labelEnd), "")
+
 
     | Not(arg) ->
         /// Generated code for the argument expression (note that we don't need
@@ -214,6 +245,7 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
         asm.AddText(RV.SEQZ(Reg.r(env.Target), Reg.r(env.Target)))
 
     | Eq(lhs, rhs)
+    | Greater(lhs, rhs)
     | Less(lhs, rhs) as expr ->
         // Code generation for equality and less-than relations is very similar:
         // we compile the lhs and rhs giving them different target registers,
@@ -243,6 +275,7 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
             /// relational operation we are compiling
             let labelName = match expr with
                             | Eq(_,_) -> "eq"
+                            | Greater(_,_) -> "greater"
                             | Less(_,_) -> "less"
                             | x -> failwith $"BUG: unexpected operation %O{x}"
             /// Label to jump to when the comparison is true
@@ -255,6 +288,8 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
                 match expr with
                 | Eq(_,_) ->
                     Asm(RV.BEQ(Reg.r(env.Target), Reg.r(rtarget), trueLabel))
+                | Greater(_,_) ->
+                    Asm(RV.BGT(Reg.r(env.Target), Reg.r(rtarget), trueLabel))
                 | Less(_,_) ->
                     Asm(RV.BLT(Reg.r(env.Target), Reg.r(rtarget), trueLabel))
                 | x -> failwith $"BUG: unexpected operation %O{x}"
@@ -278,6 +313,8 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
                 match expr with
                 | Eq(_,_) ->
                     Asm(RV.FEQ_S(Reg.r(env.Target), FPReg.r(env.FPTarget), FPReg.r(rfptarget)))
+                | Greater(_,_) ->
+                    Asm(RV.FLE_S(Reg.r(env.Target), FPReg.r(env.FPTarget), FPReg.r(rfptarget)))
                 | Less(_,_) ->
                     Asm(RV.FLT_S(Reg.r(env.Target), FPReg.r(env.FPTarget), FPReg.r(rfptarget)))
                 | x -> failwith $"BUG: unexpected operation %O{x}"

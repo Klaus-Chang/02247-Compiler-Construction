@@ -125,6 +125,20 @@ let rec internal formatASTRec (node: AST.Node<'E,'T>): Tree =
     | Sqrt(arg) ->
         mkTree "Sqrt" node [("arg", formatASTRec arg)]
 
+    | Greater(lhs, rhs) ->
+        mkTree "Greater" node [("lhs", formatASTRec lhs);("rhs", formatASTRec rhs)]
+
+    | Xor(lhs, rhs) ->
+        mkTree "Xor" node [("lhs", formatASTRec lhs)
+                           ("rhs", formatASTRec rhs)]
+    | ShortAnd(lhs, rhs) ->
+        mkTree "ShortAnd" node [("lhs", formatASTRec lhs)
+                                ("rhs", formatASTRec rhs)]
+    | ShortOr(lhs, rhs) ->
+        mkTree "ShortOr" node [("lhs", formatASTRec lhs)
+                               ("rhs", formatASTRec rhs)]
+
+                               
 
     | And(lhs, rhs) ->
         mkTree "And" node [("lhs", formatASTRec lhs)

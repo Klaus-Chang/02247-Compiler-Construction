@@ -150,6 +150,55 @@ let rec internal reduce (env: RuntimeEnv<'E,'T>)
                 Some(env', {node with Expr = Sqrt(arg')})
             | None -> None
 
+
+    | Xor(lhs, rhs) ->
+        match (lhs.Expr, rhs.Expr) with
+        | (BoolVal(v1), BoolVal(v2)) ->
+            Some(env, {node with Expr = BoolVal(v1 <> v2)})
+        | (_, _) ->
+            match (reduceLhsRhs env lhs rhs) with
+            | Some(env', lhs', rhs') ->
+                Some(env', {node with Expr = Xor(lhs', rhs')})
+            | None -> None
+
+    | ShortAnd(lhs, rhs) ->
+        match (lhs.Expr, rhs.Expr) with
+        | (BoolVal(false), _) ->
+            Some(env, {node with Expr = BoolVal(false)})
+        | (BoolVal(true), e) ->
+            Some(env, {node with Expr = e})
+        | (_, _) ->
+            match (reduce env lhs) with
+            | Some(env', lhs') ->
+                Some(env', {node with Expr = ShortAnd(lhs', rhs)})
+            | None -> None
+
+    | ShortOr(lhs, rhs) ->
+        match (lhs.Expr, rhs.Expr) with
+        | (BoolVal(true), _) ->
+            Some(env, {node with Expr = BoolVal(true)})
+        | (BoolVal(false), e) ->
+            Some(env, {node with Expr = e})
+        | (_, _) ->
+            match (reduce env lhs) with
+            | Some(env', lhs') ->
+                Some(env', {node with Expr = ShortOr(lhs', rhs)})
+            | None -> None
+
+
+    | Greater(lhs, rhs) ->
+        match (lhs.Expr, rhs.Expr) with
+        | (IntVal(v1), IntVal(v2)) ->
+            Some(env, {node with Expr = BoolVal(v1 > v2)})
+        | (FloatVal(v1), FloatVal(v2)) ->
+            Some(env, {node with Expr = BoolVal(v1 > v2)})
+        | (_, _) ->
+            match (reduceLhsRhs env lhs rhs) with
+            | Some(env', lhs', rhs') ->
+                Some(env', {node with Expr = Greater(lhs', rhs')})
+            | None -> None
+
+
     | Add(lhs, rhs) ->
         match (lhs.Expr, rhs.Expr) with
         | (IntVal(v1), IntVal(v2)) ->

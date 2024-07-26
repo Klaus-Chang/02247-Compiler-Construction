@@ -103,15 +103,34 @@ and Expr<'E,'T> =
            * rhs: Node<'E,'T>
 
     /// Division between lhs and rhs.
-    | Div of lhs: Node<'E, 'T> * rhs: Node<'E, 'T>
+    | Div of lhs: Node<'E, 'T> 
+           * rhs: Node<'E, 'T>
 
     /// Remainder between lhs and rhs.
-    | Rem of lhs: Node<'E, 'T> * rhs: Node<'E, 'T>
+    | Rem of lhs: Node<'E, 'T>
+           * rhs: Node<'E,'T>
 
     /// Square root
     | Sqrt of arg: Node<'E, 'T>
 
-           
+    /// Greater than 
+    | Greater of lhs: Node<'E, 'T>
+           * rhs: Node<'E,'T>
+
+    /// Logical xor between lhs and rhs.
+    | Xor of lhs: Node<'E, 'T>
+           * rhs: Node<'E,'T>
+
+    /// Short-circuit and between lhs and rhs.
+    | ShortAnd of lhs: Node<'E, 'T>
+           * rhs: Node<'E,'T>
+
+    /// Short-circuit or between lhs and rhs.
+    | ShortOr of lhs: Node<'E, 'T>
+           * rhs: Node<'E,'T>
+
+
+
     /// Multiplication between lhs and rhs.
     | Mult of lhs: Node<'E,'T>
             * rhs: Node<'E,'T>
