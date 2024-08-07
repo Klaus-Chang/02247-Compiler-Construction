@@ -182,6 +182,19 @@ let rec isSubtypeOf (env: TypingEnv) (t1: Type) (t2: Type): bool =
             else
                 List.forall2 (fun t1 t2 -> isSubtypeOf env t1 t2)
                              fieldTypes1 fieldTypes2
+    | (TFun(args1, ret1), TFun(args2, ret2)) ->
+        // The return type of the "smaller" function must be a subtype of the return type of the "bigger" function
+        if (not (isSubtypeOf env ret1 ret2)) then
+            false
+        // Both function types expect the same number of arguments
+        elif args1.Length <> args2.Length then
+            false
+
+        // Each argument of the "bigger" function
+        // is a subtype of
+        // the argument found at the same position in the "smaller" function
+        else
+            List.forall2 (fun t1 t2 -> isSubtypeOf env t2 t1) args1 args2
     | (TUnion(cases1), TUnion(cases2)) ->
         /// Labels of the subtype union
         let (labels1, _) = List.unzip cases1

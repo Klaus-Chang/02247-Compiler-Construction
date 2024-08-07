@@ -1,0 +1,8 @@
+type MyInt = int;
+
+fun makeFun(): (MyInt) -> MyInt = {
+   fun double(x: int): int = 2 * x;
+   double
+};
+
+assert((makeFun())(2) = 4)
