@@ -1,0 +1,7 @@
+let f: (float, float) -> float = fun(x: float, y: float) -> {
+    x + y + 2.0f
+};
+assert(f(1.0f, 2.0f) = 5.0f)
+
+
+
