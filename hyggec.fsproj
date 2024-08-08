@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- General -->
+    <AssemblyName>hyggec</AssemblyName>
+    <Version>0.0.2</Version>
+    <Description>A didactic compiler for the Hygge programming language.</Description>
+    <Copyright>Copyright 2023-2024 DTU - Technical University of Denmark</Copyright>
+    <Authors>Alceste Scalas</Authors>
+    <OutputType>Exe</OutputType>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <!-- FsLex and FsYacc -->
+    <FsLexOutputFolder>src/</FsLexOutputFolder>
+    <FsYaccOutputFolder>src/</FsYaccOutputFolder>
+    <!-- Build settings -->
+    <TargetFramework>net8.0</TargetFramework>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <LangVersion>preview</LangVersion> <!-- Needed for reverse indexes in Parser.fsy -->
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src/Log.fs" />
+    <Compile Include="src/AST.fs" />
+    <Compile Include="src/ASTUtil.fs" />
+    <!-- Lexer and parser generation -->
+    <PackageReference Include="FsLexYacc" Version="11.2.0" />
+    <FsYacc Include="src/Parser.fsy">
+      <OtherFlags>--module Parser</OtherFlags>
+    </FsYacc>
+    <FsLex Include="src/Lexer.fsl">
+      <OtherFlags>--module Lexer --unicode</OtherFlags>
+    </FsLex>
+    <Compile Include="src/Parser.fsi" />
+    <Compile Include="src/Parser.fs" />
+    <Compile Include="src/Lexer.fs" />
+    <Compile Include="src/Util.fs" />
+    <Compile Include="src/ANF.fs" />
+    <Compile Include="src/Type.fs" />
+    <Compile Include="src/Typechecker.fs" />
+    <Compile Include="src/PrettyPrinter.fs" />
+    <Compile Include="src/Interpreter.fs" />
+    <Compile Include="src/RISCV.fs" />
+    <Compile Include="src/RISCVCodegen.fs" />
+    <Compile Include="src/ANFRISCVCodegen.fs" />
+    <Compile Include="src/Peephole.fs" />
+    <!-- Command line parsing -->
+    <PackageReference Include="CommandLineParser.FSharp" Version="2.9.1" />
+    <Compile Include="src/CmdLine.fs" />
+    <Compile Include="src/RARS.fs" />
+    <!-- Testing -->
+    <PackageReference Include="Expecto" Version="10.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.14.3" />
+    <Compile Include="src/Test.fs" />
+    <!-- Main entry point -->
+    <Compile Include="src/Program.fs" />
+  </ItemGroup>
+</Project>

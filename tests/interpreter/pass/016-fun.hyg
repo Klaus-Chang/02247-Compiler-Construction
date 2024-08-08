@@ -1,0 +1,7 @@
+fun f(x: int): int = 42;
+fun g(y: float): float = {
+    let n: int = f(123);
+    42.0f + y
+};
+assert(42.0f < g(1.0f))
+

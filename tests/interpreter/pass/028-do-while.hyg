@@ -1,0 +1,3 @@
+let mutable x = 3;
+do (x <- x - 1) while (false);
+assert(x = 2)

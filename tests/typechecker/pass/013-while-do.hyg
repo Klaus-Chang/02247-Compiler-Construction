@@ -1,0 +1,11 @@
+while true do println("Hello!");
+
+while (12 < 42) do {
+    println("Hello!")
+};
+
+if (2 < 4) then
+    while (true and (4 < 2)) do "test"
+else
+    println(42)
+

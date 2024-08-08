@@ -1,0 +1,40 @@
+// Three type aliases for structure types
+type Shape = struct { name: string;
+                      area: float };
+type Circle = struct { name: string;
+                       area: float;
+                       radius: float };
+type Square = struct { name: string;
+                       area: float;
+                       side: float };
+
+// Function that takes a structure as argument
+fun displayShape(shape: Shape): unit = {
+    print("Name: ");   print(shape.name);
+    print("; area: "); println(shape.area)
+};
+
+// Structure constructors
+let c: Circle = struct { name = "Circle";
+                         area = 10.0f * 10.0f * 3.14f;
+                         radius = 10.0f };
+let s = struct { name = "Square";     // The type of s matches 'Square'
+                 area = 2.0f * 2.0f;
+                 side = 2.0f };
+let r: struct {name: string; area: float} = // The type of r matches 'Shape'
+    struct { name = "Rectangle";            // and has less fields than the
+             area = 3.0f * 4.0f;            // actual struct instance
+             width = 3.0f;
+             height = 4.0f };
+
+// Function calls with structures as arguments.  Note: the structures
+// passed as arguments may have more fields than required by the function.
+displayShape(c);
+displayShape(s);
+displayShape(r);
+
+// Assignment to structure fields
+c.area <- s.area <- r.area <- 0.0f;
+assert(c.area = s.area);
+assert(s.area = r.area);
+assert(r.area = 0.0f)

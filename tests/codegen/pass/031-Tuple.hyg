@@ -1,0 +1,4 @@
+let t: tuple {string, int, bool} = tuple {"Hello", 40 + 2, true};
+t._1 <- "Hej";
+t._2 <- t._2 + 10;
+assert(t._2 = 52)

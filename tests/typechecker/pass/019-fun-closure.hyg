@@ -1,0 +1,15 @@
+fun g(x: int): (int) -> int = {
+  fun f(y: int): int = x + y;
+  f
+};
+
+g: (int) -> (int) -> int;
+
+let clos1: (int) -> int = g(1);
+let clos2: (int) -> int = g(2);
+
+let result1: int = clos1(1);
+let result2: int = clos2(2);
+
+assert(1 < result1);
+assert(2 < result2)

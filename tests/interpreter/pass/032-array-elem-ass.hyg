@@ -1,0 +1,21 @@
+let n = 5;
+let arr {int} = array(n, 1);
+arrayElem(arr, 0) <- arrayElem(arr, 0) + n;
+arrayElem(arr, 1) <- arrayElem(arr, 1) + n + 1;
+arrayElem(arr, 2) <- arrayElem(arr, 2) + n + 2;
+arrayElem(arr, 3) <- arrayElem(arr, 3) + n + 3;
+arrayElem(arr, 4) <- arrayElem(arr, 4) + n + 4;
+
+assert(arrayElem(arr, 0) = 6);
+assert(arrayElem(arr, 1) = 7);
+assert(arrayElem(arr, 2) = 8);
+assert(arrayElem(arr, 3) = 9);
+assert(arrayElem(arr, 4) = 10);
+
+arrayElem(arr, 1) <- arrayElem(arr, 4) + n + 5;
+
+assert(arrayElem(arr, 1) = 20);
+
+let sum = arrayElem(arr, 0) + arrayElem(arr, 1) + arrayElem(arr, 2) + arrayElem(arr, 3) + arrayElem(arr, 4);
+
+assert(sum = 53)

@@ -1,0 +1,2 @@
+({println("Left of 'and'"); false}) and ({println("Right of 'and'"); true});
+({println("Left of 'or'"); true}) or ({println("Right of 'or'"); true})

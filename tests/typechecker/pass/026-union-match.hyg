@@ -1,0 +1,12 @@
+type U = union {foo: int; bar: string};
+
+fun matcher(x: U): int =
+    match x with {
+        foo{z} -> z + 1;
+        bar{z} -> 1000
+    };
+
+let x: U = foo{42};
+let y: U = bar{"Hello"};
+assert(matcher(foo{42}) = 43);
+assert(matcher(bar{"Hi"}) = 1000)

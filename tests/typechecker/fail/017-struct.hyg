@@ -1,0 +1,2 @@
+(struct {f = 42; g = true}): struct {f: int; g: bool; f: int}
+

@@ -1,0 +1,15 @@
+let x = 1; // Variable declaration
+
+type MyInt = int; // Type declaration
+
+let y: MyInt = { // Variable declaration with type annotation
+    println("Initialising y");
+    2: int // Type ascription
+};
+
+if x < y then println("x is smaller than y")
+         else println("x is not smaller than y");
+
+print("The result of x + y is: ");
+println(x + y);
+assert(x + y < 42) // Assertion
