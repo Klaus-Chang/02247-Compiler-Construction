@@ -672,117 +672,6 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
         Asm(RV.LA(Reg.r(env.Target), funLabel), "Load lambda function address")
             ++ funCode
 
-    // | Application(expr, args) ->
-    //     /// Integer registers to be saved on the stack before executing the
-    //     /// function call, and restored when the function returns.  The list of
-    //     /// saved registers excludes the target register for this application.
-    //     /// Note: the definition of 'saveRegs' uses list comprehension:
-    //     /// https://en.wikibooks.org/wiki/F_Sharp_Programming/Lists#Using_List_Comprehensions
-    //     match args.Type with
-    //     | t when (isSubtypeOf args.Env t TInt) ->
-    //         let saveRegs =
-    //             List.except [Reg.r(env.Target)]
-    //                         (Reg.ra :: [for i in 0u..7u do yield Reg.a(i)]
-    //                         @ [for i in 0u..6u do yield Reg.t(i)])
-    //             /// Assembly code for the expression being applied as a function
-    //         let appTermCode =
-    //             Asm().AddText(RV.COMMENT("Load expression to be applied as a function"))
-    //             ++ (doCodegen env expr)
-
-    //         /// Indexed list of argument expressions.  We will use the as an offset
-    //         /// (above the current target register) to determine the target register
-    //         /// for compiling each expression.
-    //         let indexedArgs = List.indexed args
-    //         /// Function that compiles an argument (using its index to determine its
-    //         /// target register) and accumulates the generated assembly code
-    //         let compileArg (acc: Asm) (i, arg) =
-    //             acc ++ (doCodegen {env with Target = env.Target + (uint i) + 1u} arg)
-    //         /// Assembly code of all application arguments, obtained by folding over
-    //         /// 'indexedArgs'
-    //         let argsCode = List.fold compileArg (Asm()) indexedArgs
-
-    //         /// Function that copies the content of a target register (used by
-    //         /// 'compileArgs' and 'argsCode' above) into an 'a' register, using an
-    //         /// index to determine the source and target registers, and accumulating
-    //         /// the generated assembly code
-    //         let copyArg (acc: Asm) (i: int) =
-    //             acc.AddText(RV.MV(Reg.a(uint i), Reg.r(env.Target + (uint i) + 1u)),
-    //                         $"Load function call argument %d{i+1}")
-    //         /// Code that loads each application argument into a register 'a', by
-    //         /// copying the contents of the target registers used by 'compileArgs'
-    //         /// and 'argsCode' above.  To this end, this code folds over the indexes
-    //         /// of all arguments (from 0 to args.Length), using 'copyArg' above.
-    //         let argsLoadCode = List.fold copyArg (Asm()) [0..(args.Length-1)]
-    //         /// Code that performs the function call
-    //         let callCode =
-    //             appTermCode
-    //             ++ argsCode // Code to compute each argument of the function call
-    //                 .AddText(RV.COMMENT("Before function call: save caller-saved registers"))
-    //             ++ (saveRegisters saveRegs saveFRegs [])
-    //             ++ argsLoadCode // Code to load arg values into arg registers
-    //                 .AddText(RV.JALR(Reg.ra, Imm12(0), Reg.r(env.Target)), "Function call")
-    //             ++ fargsLoadCode // Code to load arg values into arg registers
-    //                 .AddText(RV.JALR(Reg.ra, Imm12(0), FPReg.r(env.FPTarget)), "Function call")
-    //         /// Code that handles the function return value (if any)
-    //         let retCode =
-    //                 Asm(RV.MV(Reg.r(env.Target), Reg.a0),
-    //                     $"Copy function return value to target register")       
-    //         // Put everything together, and restore the caller-saved registers
-    //         callCode
-    //             .AddText(RV.COMMENT("After function call"))
-    //             ++ retCode
-    //             .AddText(RV.COMMENT("Restore caller-saved registers"))
-    //                 ++ (restoreRegisters saveRegs saveFRegs [])                                 
-    //     | t when (isSubtypeOf args.Env t TFloat) -> 
-    //         let saveFRegs =
-    //             List.except [Reg.r(env.Target)]
-    //                         (Reg.ra :: [for i in 0u..7u do yield FPReg.fa(i)]
-    //                         @ [for i in 0u..6u do yield FPReg.ft(i)])
-    //         /// Assembly code for the expression being applied as a function
-    //         let appTermCode =
-    //             Asm().AddText(RV.COMMENT("Load expression to be applied as a function"))
-    //             ++ (doCodegen env expr)
-
-    //         /// Indexed list of argument expressions.  We will use the as an offset
-    //         /// (above the current target register) to determine the target register
-    //         /// for compiling each expression.
-    //         let indexedArgs = List.indexed args
-    //         /// Function that compiles an argument (using its index to determine its
-    //         /// target register) and accumulates the generated assembly code
-    //         let compileArg (acc: Asm) (i, arg) =
-    //             acc ++ (doCodegen {env with Target = env.Target + (uint i) + 1u} arg)
-    //         /// Assembly code of all application arguments, obtained by folding over
-    //         /// 'indexedArgs'
-    //         let argsCode = List.fold compileArg (Asm()) indexedArgs
-
-    //         /// Function that copies the content of a target register (used by
-    //         /// 'compileArgs' and 'argsCode' above) into an 'a' register, using an
-    //         /// index to determine the source and target registers, and accumulating
-    //         /// the generated assembly code
-    //         let copyfArg (acc: Asm) (i: int) =
-    //             acc.AddText(RV.FMV_S(FPReg.fa(uint i), FPReg.r(env.FPTarget + (uint i) + 1u)),
-    //                         $"Load function call argument %d{i+1}")
-    //         let fargsLoadCode = List.fold copyfArg (Asm()) [0..(args.Length-1)]
-    //     /// Code that performs the function call
-    //         let callCode =
-    //             appTermCode
-    //             ++ argsCode // Code to compute each argument of the function call
-    //                 .AddText(RV.COMMENT("Before function call: save caller-saved registers"))
-    //             ++ (saveRegisters saveRegs saveFRegs [])
-    //             ++ argsLoadCode // Code to load arg values into arg registers
-    //                 .AddText(RV.JALR(Reg.ra, Imm12(0), Reg.r(env.Target)), "Function call")
-    //             ++ fargsLoadCode // Code to load arg values into arg registers
-    //                 .AddText(RV.JALR(Reg.ra, Imm12(0), FPReg.r(env.FPTarget)), "Function call")
-    //         /// Code that handles the function return value (if any)
-    //         let retCode =
-    //                 Asm(RV.MV(FPReg.r(env.FPTarget), FPReg.fa0),
-    //                     $"Copy function return value to target register")                            
-    //         // Put everything together, and restore the caller-saved registers
-    //         callCode
-    //             .AddText(RV.COMMENT("After function call"))
-    //             ++ retCode
-    //             .AddText(RV.COMMENT("Restore caller-saved registers"))
-    //                 ++ (restoreRegisters saveRegs saveFRegs [])
     | Application(expr, args) ->
         /// Integer registers to be saved on the stack before executing the
         /// function call, and restored when the function returns.  The list of
@@ -823,16 +712,13 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
         /// copying the contents of the target registers used by 'compileArgs'
         /// and 'argsCode' above. This code folds over the indexes
         /// of arguments (from 0 to maximum the first 8 elements), using 'copyArg' above.
-        let argsLengthToCopy = if args.Length <= 8 then args.Length else 8
-        let argsLoadCode = List.fold copyArg (Asm()) [0..(argsLengthToCopy-1)]
-
-        /// Code that saves the remaining application arguments (if any) 
-        /// into the stack, in reverse order
-        let extraRegistersNeeded =
+        let argsLength = if args.Length <= 8 then args.Length else 8
+        let argsLoadCode = List.fold copyArg (Asm()) [0..(argsLength-1)]
+        let extraRegisters=
             if args.Length > 8
             then [8..(args.Length-1)] |> List.map (fun i -> Reg.r(env.Target + (uint i) + 1u))
             else []
-        let argsSaveCode = saveRegisters (extraRegistersNeeded |> List.rev) []
+        let argsSaveCode = saveRegisters (extraRegisters |> List.rev) []
 
         /// Code that performs the function call
         let callCode =
@@ -841,7 +727,7 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
                .AddText(RV.COMMENT("Before function call: save caller-saved registers"))
                ++ (saveRegisters saveRegs [])
                ++ argsLoadCode // Code to load arg values into arg registers
-               ++ argsSaveCode // Code to save arg values into the stack
+               ++ argsSaveCode // Code to save in the stack
                   .AddText(RV.JALR(Reg.ra, Imm12(0), Reg.r(env.Target)), "Function call")
 
         /// Code that handles the function return value (if any)
@@ -850,11 +736,10 @@ let rec internal doCodegen (env: CodegenEnv) (node: TypedAST): Asm =
                 $"Copy function return value to target register")
 
         // Put everything together, and restore the caller-saved registers,
-        // as well as registers used for storing arguments
         callCode
             .AddText(RV.COMMENT("After function call"))
-            .AddText(RV.COMMENT("Restore registers used for extra arguments"))
-                  ++ (restoreRegisters (extraRegistersNeeded |> List.rev) [])
+            .AddText(RV.COMMENT("Restore extra arguments"))
+                  ++ (restoreRegisters (extraRegisters |> List.rev) [])
             ++ retCode
             .AddText(RV.COMMENT("Restore caller-saved registers"))
                   ++ (restoreRegisters saveRegs [])
