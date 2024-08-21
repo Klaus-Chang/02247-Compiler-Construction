@@ -1,0 +1,13 @@
+type U = union {foo: int; bar: string; baz: bool};
+
+fun matcher(x: U): int =
+    match x with {
+        foo{z} -> z + 1;
+        bar{z} -> {
+            let w: int = 0 + 1;
+            w
+        }
+    };
+
+let x: U = baz{true};
+matcher(x)

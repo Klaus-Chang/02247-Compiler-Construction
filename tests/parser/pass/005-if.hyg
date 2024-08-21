@@ -1,0 +1,2 @@
+if (32 < true) then 1.0f else "Hello!";
+if (10 and "Hello") then 10 else false

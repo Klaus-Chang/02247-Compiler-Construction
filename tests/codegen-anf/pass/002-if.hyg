@@ -1,0 +1,2 @@
+let x: int = if true then 42 else 1;
+assert(x = 42)

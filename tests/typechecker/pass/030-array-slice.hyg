@@ -1,0 +1,11 @@
+let intArray: array {int} = array(3 + 3, 50 + 3);
+let floatArray: array {float} = array(15, 45.3f + 0.7f);
+let stringArray: array {string} = array(50, "cozy");
+
+(intArray): array {int};
+(floatArray): array {float};
+(stringArray): array {string};
+
+(arraySlice(intArray, 1, 4)): array {int};
+(arraySlice(floatArray, 2, 3)): array {float};
+(arraySlice(stringArray, 2, 5)): array {string}

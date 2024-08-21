@@ -1,0 +1,6 @@
+let x: foo = 3;
+let x: baz = {
+    let y: bar = 4;
+    x + w
+};
+println("Hello")

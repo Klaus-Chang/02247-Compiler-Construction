@@ -1,0 +1,14 @@
+// Syntactic sugar for function definition
+fun f(): int = foo;
+
+fun g(x: int, y: baz): xyz = {
+    fun h(z: abc): int = 32;
+    h()
+};
+
+fun foo(x: int): (int, float) -> bool = {
+    println("Hello");
+    42
+};
+
+"Bye!"

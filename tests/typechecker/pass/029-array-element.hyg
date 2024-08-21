@@ -1,0 +1,7 @@
+let arr: array {float} = array(50, 35.0f + 5.0f);
+let x: float = arrayElem(arr, 0);
+x;
+
+let arr2: array {int} = array(50, 35 + 5);
+let y: int = arrayElem(arr2, 0);
+y

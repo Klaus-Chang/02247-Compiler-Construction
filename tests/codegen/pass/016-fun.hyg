@@ -1,0 +1,7 @@
+fun f(x: int): bool = x < 42;
+fun g(b: bool): int = if b then 42 else 1;
+fun h(y: int): int = {
+    if f(y) then g(f(y)) else g(false)
+};
+assert(h(1) = 42);
+assert(h(42) = 1)

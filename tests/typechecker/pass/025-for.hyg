@@ -1,0 +1,3 @@
+let mutable counter = 5;
+for ((); counter < 20; counter <- counter + 2)
+    print(counter)

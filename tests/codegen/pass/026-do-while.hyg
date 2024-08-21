@@ -1,0 +1,10 @@
+let mutable x = 0;
+let mutable y = 0;
+
+do {
+    x <- x + 1;
+    y <- y + 1
+} while (not (x + y = 42));
+
+print(x + y);
+assert(x + y = 42)

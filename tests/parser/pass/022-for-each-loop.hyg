@@ -1,0 +1,4 @@
+let arr = array(10, 3);
+for (x in arr) {
+    println(x)
+}

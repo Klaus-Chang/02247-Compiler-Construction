@@ -1,0 +1,5 @@
+let x: string = "hallo";
+let arr: array {int} = array(2 + 2, 40 + 2);
+let len: int = arrayLength(arr);
+
+assert(len = 4)

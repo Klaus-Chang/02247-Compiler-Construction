@@ -1,0 +1,23 @@
+fun f(x1: int, x2: int, x3: int, x4: int,
+      x5: int, x6: int, x7: int, x8: int,
+      x9: int, x10: int): int = {
+    let v1: int = 1;
+    let v2: int = 2;
+    let v3: int = 3;
+    let v4: int = 4;
+    let v5: int = 5;
+    let v6: int = 6;
+    let v7: int = 7;
+    let v8: int = 8;
+    let v9: int = 9;
+    let v10: int = 10;
+
+    x1*v1 + x2*v2 + x3*v3 + x4*v4 + x5*v5 + x6*v6 + x7*v7 + x8*v8 + x9*v9 + x10*v10
+};
+
+let result0: int = f(1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+
+let result1: int = f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+assert(result0 = 55);
+assert(result1 = 385)

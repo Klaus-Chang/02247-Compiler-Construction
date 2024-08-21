@@ -1,0 +1,6 @@
+let x = 1;
+{
+   let x: int = 41 + x;
+   assert(x = 42)
+}
+assert(x = 1)

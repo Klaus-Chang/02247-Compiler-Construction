@@ -1,0 +1,4 @@
+type S = int;
+type S = float;
+let x: S = 42.0f;
+x

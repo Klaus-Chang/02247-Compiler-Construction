@@ -1,0 +1,7 @@
+assert((struct {f = 42; g = true}).f = 42);
+assert((struct {f = struct {g = 0; h = 42}; h = 1}).f.h = 42);
+
+let s1: foo = struct {f = 42; g = true};
+let s2: bar = struct {f = 0; g = s1};
+let s3: baz = struct {f = 0; g = "Hello"; h = s2};
+assert(s3.h.g.f = 42)

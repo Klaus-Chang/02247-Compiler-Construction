@@ -1,0 +1,2 @@
+let arr: array{int} = array(2, 40 + 2); 
+arr

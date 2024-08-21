@@ -1,0 +1,17 @@
+let arr: array {int} = array(4, 42);
+let x: int = arrayElem(arr, 2);
+
+assert(x = 42);
+
+// Assign a sliced array
+let sliced: array {int} = arraySlice(arr, 1, 2);
+
+let y: int = arrayElem(sliced, 0);
+
+assert(y = 42);
+
+arrayElem(arr, 1) <- 3;
+
+// both arrays should now be modified
+assert(arrayElem(arr, 1) = 3);
+assert(arrayElem(sliced, 0) = 3)

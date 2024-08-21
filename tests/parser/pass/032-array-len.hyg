@@ -1,0 +1,5 @@
+let arr: array {int} = array(3 + 2, 40 + 3);
+let len: int = arrayLength(arr);
+
+assert(len = 5);
+print(len)

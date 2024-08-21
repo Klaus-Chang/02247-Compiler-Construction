@@ -1,0 +1,3 @@
+let x: int = 3;
+let y: int = x + w;
+println(x + x)

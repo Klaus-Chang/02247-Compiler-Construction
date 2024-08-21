@@ -1,0 +1,1 @@
+assert(if not (5 < 3) then true else false)

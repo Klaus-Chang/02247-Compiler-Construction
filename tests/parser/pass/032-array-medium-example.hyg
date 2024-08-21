@@ -1,0 +1,20 @@
+let mutable n = 10;
+let arr: array {int} = array(n, 50 + 2);
+arr;
+
+print(arrayLength(arr));
+
+let mutable a = 1;
+
+while (a < arrayLength(arr)) do {
+    arrayElem(arr, a) <- arrayElem(arr, a) + a;
+    a <- a + 2
+};
+
+a <- 0;
+while (a < arrayLength(arr)) do {
+    assert(arrayElem(arr, a) = 52 + a);
+    a <- a + 21
+};
+
+print(a)

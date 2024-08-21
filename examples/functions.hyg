@@ -1,0 +1,41 @@
+// A simple function: takes two integer arguments and returns an integer.
+fun f(x: int, y: int): int = x + y;
+
+// A function instance (a.k.a. lambda term), with a function type annotation:
+// g is a function that takes two integer arguments and returns an integer.
+let g: (int, int) -> int = fun (x: int, y: int) -> x + y + 1;
+
+let x = f(1, 2);  // Applying ("calling") a function
+let y = g(1, 2);  // Applying ("calling") a lambda abstraction
+assert(x + 1 = y);
+
+// A function that defines a nested function and calls it.
+fun h(x: int): int = {
+    fun privateFun(z: int): int = z + 2;
+    privateFun(x)
+};
+
+let z = h(40);
+assert(z = 42);
+
+// A function that takes a function as argument, and calls it.
+fun applyFunToInt(f: (int) -> int,
+                  x: int): int =
+    f(x);
+
+assert(applyFunToInt(h, 1) = 3);
+
+// A function that defines a nested function and returns it.
+fun makeFun(addOne: bool): (int) -> int =
+    if (addOne) then {
+        fun inc(x: int): int = x + 1;
+        inc
+    } else {
+        fun (x: int) -> x + 2
+    };
+
+let plusOne = makeFun(true);   // Type: (int) -> int
+let plusTwo = makeFun(false);  // Type: (int) -> int
+assert(plusOne(42) = 43);
+assert(plusTwo(42) = 44);
+assert((makeFun(true))(42) = 43)

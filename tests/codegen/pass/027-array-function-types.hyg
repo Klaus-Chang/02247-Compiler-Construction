@@ -1,0 +1,9 @@
+type TFuncArray = array {(int) -> int};
+
+fun f(x: int): int = x + 1;
+
+let arr4: TFuncArray = array(2 + 2, f);
+
+assert(f(3) = arrayElem(arr4, 0)(3));
+assert(f(4) = arrayElem(arr4, 1)(4));
+assert(f(5) = arrayElem(arr4, 2)(5))

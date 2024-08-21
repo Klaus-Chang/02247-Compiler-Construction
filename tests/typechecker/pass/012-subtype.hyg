@@ -1,0 +1,8 @@
+type MyInt = int;
+
+fun triple(x: MyInt): MyInt = 3 * x;
+
+fun applyFunToInt(f: (int) -> int, x: int): int =
+    f(x);
+
+assert(applyFunToInt(triple, 5) = 15)

@@ -1,0 +1,6 @@
+let arr1 = array(10, 3);         // Arr1 contains 10 elements, all equal to 3
+let arr2 = slice(arr1, 2, 6);    // Array slice sharing elements 2..6 of arr1
+
+arrayElem(arr2, 0) <- 42;        // This also overwrites arrayElem(arr1, 2)
+assert(arrayElem(arr1, 2) = 42);
+assert(arrayElem(arr2, 0) = 42)

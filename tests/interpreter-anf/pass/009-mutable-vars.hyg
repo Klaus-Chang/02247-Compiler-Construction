@@ -1,0 +1,3 @@
+let mutable x = 2 + 1;
+x <- x + 1;
+assert(x = 4)

@@ -1,0 +1,2 @@
+let s: struct { f: int; mutable g: string } = struct { f = 44; g = "Hyggec" };
+s

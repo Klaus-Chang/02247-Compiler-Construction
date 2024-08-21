@@ -1,0 +1,4 @@
+fun f(x: int): int = x + x;
+let g: (int) -> int = f;
+let result: int = g(2);
+assert(result = 4)

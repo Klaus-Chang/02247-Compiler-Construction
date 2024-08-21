@@ -1,0 +1,9 @@
+let mutable x = 1.0f;
+let mutable y = 2.0f;
+let mutable z = 3.0f;
+
+x <- y <- z <- x + y + z;
+
+assert(x = y);
+assert(y = z);
+assert(z = 1.0f + 2.0f + 3.0f)

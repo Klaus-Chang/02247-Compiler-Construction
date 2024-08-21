@@ -1,0 +1,6 @@
+let mutable x = 0;
+x <- x + 1;
+{
+    let x = 3;
+    x <- x + 1 // Gets stuck because the assignment lhs is replaced with 3
+}

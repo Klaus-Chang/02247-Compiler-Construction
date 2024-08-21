@@ -1,0 +1,1 @@
+arraySlice(arr, 32, 42)

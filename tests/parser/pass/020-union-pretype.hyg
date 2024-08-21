@@ -1,0 +1,2 @@
+let x: union {c1: foo; c2: bar; c3: baz} = 42;
+()

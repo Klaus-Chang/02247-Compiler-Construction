@@ -1,0 +1,2 @@
+let x: union {c1: int; c2: bool; c3: string} = c1{42};
+()

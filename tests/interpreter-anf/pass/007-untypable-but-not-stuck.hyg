@@ -1,0 +1,3 @@
+// An expression that is untypable, but does not get stuck.
+let x: int = if (2 < 3) then 42 else "This should never happen!";
+assert(x = 42)

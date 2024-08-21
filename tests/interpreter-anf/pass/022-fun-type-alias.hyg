@@ -1,0 +1,8 @@
+type MyInt = int;
+
+fun f(x: MyInt): MyInt = x + 1;
+
+let fAlias: (int) -> int = f;
+
+assert(fAlias(42) = f(42));
+assert(f(42) = 43)

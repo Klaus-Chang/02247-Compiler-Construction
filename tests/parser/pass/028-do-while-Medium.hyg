@@ -1,0 +1,12 @@
+let mutable x = 0;
+let mutable y = 0;
+
+do {
+    x <- x + 1;
+    y <- y + 1
+} while (not (x + y = 36));
+
+assert(x + y = 36);
+assert(x = 18);
+assert(y = 18);
+print(x + y)

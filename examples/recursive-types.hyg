@@ -1,0 +1,28 @@
+// A tree type, where nodes can have zero, one, or two children.
+type Tree = union {
+    Leaf: int;
+    Node1: struct {value: int; child: Tree};
+    Node2: struct {value: int; child1: Tree; child2: Tree}
+};
+
+// A (non-empty) list, where each node can have zero or one child.
+type List = union {
+    Leaf: int;
+    Node1: struct {value: int; child: List}
+};
+
+// Check whether the given tree only has one element.
+fun hasSize1(t: Tree): bool =
+    match t with {
+        Leaf{_} -> true;
+        Node1{_} -> false;
+        Node2{_} -> false
+    };
+
+// Here, 't' can be given type Tree or List: both type-check.
+let t: Tree = Node1{struct{value = 1;
+                           child = Node1{struct{value = 2;
+                                                child = Leaf{3}}}}};
+
+// If 't' above has type List, we get a stack overflow during type checking!
+assert(not hasSize1(t))

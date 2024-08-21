@@ -1,0 +1,11 @@
+let arr: array {int} = array(2 + 2, 40 + 2);
+let arr1: array {float} = array(10, 40.2f + 0.5f);
+let arr2: array {string} = array(42, "hygge");
+
+(arr): array {int};
+(arr1): array {float};
+(arr2): array {string};
+
+(arraySlice(arr, 0, 3)): array {int};
+(arraySlice(arr1, 1, 2)): array {float};
+(arraySlice(arr2, 1, 4)): array {string}

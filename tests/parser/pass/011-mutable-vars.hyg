@@ -1,0 +1,6 @@
+let mutable x = 3;
+let x: baz = {
+    let mutable y = 4;
+    x <- w
+};
+println("Hello" <- 42)
